@@ -1,5 +1,7 @@
+# Runs the trades service as a standalone Pyton app (not Dockerized)
 dev:
 	uv run services/trades/src/trades/main.py
+
 
 push:
 	kind load docker-image trades:dev --name rwml-34fa
