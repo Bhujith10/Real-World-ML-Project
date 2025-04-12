@@ -1,6 +1,5 @@
 # Create an Application instance with Kafka configs
-
-
+from trades.config import config
 from kraken_api import KrakenAPI, Trade
 from loguru import logger
 from quixstreams import Application
@@ -46,7 +45,6 @@ def run(
 
 
 if __name__ == '__main__':
-    from trades.config import config
 
     # create object that can talk to the Kraken API and get us the trade data in real time
     api = KrakenAPI(product_ids=config.product_ids)

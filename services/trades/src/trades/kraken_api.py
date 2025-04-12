@@ -50,19 +50,6 @@ class KrakenAPI:
             logger.error(f'No `data` field with trades in the message {e}')
             return []
 
-        # Method 1 to create a list of trades
-        # Naive implementation
-        # trades = []
-        # for trade in trades_data:
-        #     trades.append(
-        #         Trade(
-        #             product_id=trade['symbol'],
-        #             price=trade['price'],
-        #             quantity=trade['qty'],
-        #             timestamp=trade['timestamp'],
-        #         )
-        #     )
-
         # Method 2 to create a list of trades
         # Using list comprehension (this is faster)
         trades = [
@@ -74,6 +61,8 @@ class KrakenAPI:
             )
             for trade in trades_data
         ]
+
+        # breakpoint()
 
         return trades
 
@@ -95,6 +84,8 @@ class KrakenAPI:
                 }
             )
         )
+
+        # breakpoint()
 
         # discard the first 2 messages for each product_id
         # as they contain no trade data

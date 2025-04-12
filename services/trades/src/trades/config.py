@@ -16,6 +16,8 @@ class Settings(BaseSettings):
         'XRP/USD',
         'XRP/EUR',
     ]
+    # The below two variables are not assigned values here
+    # which means they should be present in the env file
     kafka_broker_address: str
     kafka_topic_name: str
 
