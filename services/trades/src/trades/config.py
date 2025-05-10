@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
+import os
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -18,9 +18,8 @@ class Settings(BaseSettings):
     ]
     # The below two variables are not assigned values here
     # which means they should be present in the env file
-    kafka_broker_address: str
+    kafka_broker_address: str 
     kafka_topic_name: str
 
 
 config = Settings()
-# print(settings.model_dump())

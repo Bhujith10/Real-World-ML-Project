@@ -1,8 +1,10 @@
 # Create an Application instance with Kafka configs
-from trades.config import config
+
 from kraken_api import KrakenAPI, Trade
 from loguru import logger
 from quixstreams import Application
+
+from trades.config import config
 
 
 def run(
@@ -27,7 +29,7 @@ def run(
             for event in events:
                 # 2. Serialize an event using the defined Topic
                 message = topic.serialize(
-                    # key=event["id"],
+                    key=event.product_id,
                     value=event.to_dict()
                 )
 
@@ -35,7 +37,7 @@ def run(
                 producer.produce(
                     topic=topic.name,
                     value=message.value,
-                    # key=message.key
+                    key=message.key
                 )
 
                 # logger.info(f'Produced message to topic {topic.name}')
@@ -54,3 +56,15 @@ if __name__ == '__main__':
         kafka_topic_name=config.kafka_topic_name,
         kraken_api=api,
     )
+
+    # When running locally the kafka_broker_address should be localhost:9092
+
+    # run(
+    #     kafka_broker_address="localhost:9092",
+    #     kafka_topic_name="trades",
+    #     kraken_api=api,
+    # )
+
+    #kafka-e11b-kafka-bootstrap.kafka.svc.cluster.local:9092
+
+

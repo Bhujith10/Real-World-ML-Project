@@ -3,16 +3,17 @@ A simple file that uses quixstreams to produce data which would be sent to kafka
 """
 
 
-from quixstreams import Application
-import time
 import random
+import time
+
+from quixstreams import Application
 
 # Initialize the app
-app = Application(broker_address="172.20.0.2:31092",
-                  consumer_group="example")  
+app = Application(broker_address="localhost:9092",
+                  consumer_group="exmple2")
 
 # Create a topic and producer
-topic = app.topic(name="dummy-topic", value_serializer="json")
+topic = app.topic(name="dummy-topic2", value_serializer="json")
 producer = app.get_producer()
 
 
@@ -28,9 +29,9 @@ with producer:
         # Serialize the message using the topic
         message = topic.serialize(key=dummy_data['id'], value=dummy_data)
 
-        producer.produce(topic=topic.name, 
+        producer.produce(topic=topic.name,
                          value=message.value,
                          key=message.key)
-        
+
         print(f"Produced: {dummy_data}")
         time.sleep(1)

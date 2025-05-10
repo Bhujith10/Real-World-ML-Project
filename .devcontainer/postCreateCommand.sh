@@ -1,65 +1,37 @@
 #!/bin/bash
-set -e
 
-echo "📦 Setting up project environment..."
-
+# Install tools specified in mise.toml
+#
 cd /workspaces/real-time-ml-system-cohort-4
-
-# Setup Python virtualenv
-if [ ! -d ".venv" ]; then
-    echo "🐍 Creating Python virtual environment..."
-    python3 -m venv .venv
-fi
-
-source .venv/bin/activate
-
-if [ -f "requirements.txt" ]; then
-    echo "📦 Installing Python dependencies..."
-    .venv/bin/pip install --upgrade pip
-    .venv/bin/pip install -r requirements.txt
-fi
-
-# Setup mise
 mise trust
 mise install
 echo 'eval "$(/usr/local/bin/mise activate bash)"' >> ~/.bashrc
+source ~/.bashrc
 
-echo "✅ Python venv & mise tools setup done"
+# Install TA-Lib dependencies
+echo "Installing TA-Lib..."
+# Install build dependencies
+apt-get update
+apt-get install -y build-essential wget
 
-# Install latest kubectl
-echo "📦 Installing kubectl..."
-tmp_dir=$(mktemp -d)
-cd "$tmp_dir"
-curl -LO "https://dl.k8s.io/release/$(curl -sL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-chmod +x kubectl
-mv kubectl /usr/local/bin/
-cd -
-rm -rf "$tmp_dir"
+# Download and install TA-Lib C/C++ library 
+wget https://github.com/ta-lib/ta-lib/releases/download/v0.6.4/ta-lib-0.6.4-src.tar.gz
+tar -xzf ta-lib-0.6.4-src.tar.gz
+cd ta-lib-0.6.4/
+./configure --prefix=/usr
+make
+make install
+cd ..
 
-echo "✅ kubectl installed"
+# Create symbolic links for header files in the specific path the Python wrapper is looking for
+mkdir -p /usr/include/ta-lib
+ln -s /usr/include/ta_*.h /usr/include/ta-lib/
+ln -s /usr/include/ta_*_wrappers.h /usr/include/ta-lib/
 
-# Configure Docker to use systemd cgroup driver (required by kind)
-echo "🔧 Configuring Docker to use systemd cgroup driver..."
-mkdir -p /etc/docker
-cat <<EOF > /etc/docker/daemon.json
-{
-  "exec-opts": ["native.cgroupdriver=systemd"]
-}
-EOF
+# Install Python wrapper
+pip install ta-lib==0.6.3 --verbose
 
-echo "🔄 Restarting Docker daemon..."
-systemctl restart docker
+# Clean up
+rm -rf ta-lib-0.6.4 ta-lib-0.6.4-src.tar.gz
 
-# Wait for Docker to be ready
-until docker info > /dev/null 2>&1; do
-  echo "⏳ Waiting for Docker daemon to start..."
-  sleep 2
-done
-echo "✅ Docker is ready"
-
-# Create a kind cluster
-echo "🚀 Creating Kind cluster..."
-kind create cluster --name devcluster
-
-echo "✅ Kind cluster created"
-echo "🎉 postCreateCommand.sh completed successfully!"
+echo "TA-Lib installation completed"
