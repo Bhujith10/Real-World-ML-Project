@@ -1,8 +1,8 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: candles
-  namespace: rwml
   labels:
     app: candles
 spec:
@@ -17,15 +17,15 @@ spec:
     spec:
       containers:
       - name: candles
-        image: ghcr.io/bhujith10/trades:0.1.5-beta-1746113516@sha256:e1c5cd2910ea989cd37226e8e8a138c522727fed937599939876511aeb4f2fa7
-        imagePullPolicy: Always # Make sure we use the latest docker images fronm the github container registry, disregarding the caches images that kubernetes might have.
+        image: candles:dev
+        imagePullPolicy: Never # Use the local image
         env:
         - name: KAFKA_BROKER_ADDRESS
-          value: kafka-c6c8-kafka-bootstrap.strimzi.svc.cluster.local:9092
+          value: kafka-e11b-kafka-bootstrap.kafka.svc.cluster.local:9092
         - name: KAFKA_INPUT_TOPIC
-          value: "trades"
+          value: "trades_historical"
         - name: KAFKA_OUTPUT_TOPIC
-          value: "candles"
+          value: "candles_historical"
         - name: KAFKA_CONSUMER_GROUP
           value: "candles_consumer_group"
         - name: CANDLE_SECONDS

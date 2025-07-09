@@ -12,17 +12,6 @@ RUN apt-get update && apt-get install -y \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Install ta-lib
-ENV TALIB_DIR=/usr/local
-RUN wget https://github.com/ta-lib/ta-lib/releases/download/v0.6.4/ta-lib-0.6.4-src.tar.gz && \
-    tar -xzf ta-lib-0.6.4-src.tar.gz && \
-    cd ta-lib-0.6.4/ && \
-    ./configure --prefix=$TALIB_DIR && \
-    make -j$(nproc) && \
-    make install && \
-    cd .. && \
-    rm -rf ta-lib-0.6.4-src.tar.gz ta-lib-0.6.4/
-
 # Ensure TA-Lib is linked correctly
 RUN ldconfig
 
@@ -49,7 +38,7 @@ COPY docker /app/docker
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-  uv sync --frozen --no-dev
+    uv sync --frozen --no-install-project --no-dev
 
 ########################################################
 # Stage 2: Final stage

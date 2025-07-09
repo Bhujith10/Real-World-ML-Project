@@ -1,5 +1,8 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
 import os
+from typing import Literal
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -18,8 +21,10 @@ class Settings(BaseSettings):
     ]
     # The below two variables are not assigned values here
     # which means they should be present in the env file
-    kafka_broker_address: str 
+    kafka_broker_address: str
     kafka_topic_name: str
+    live_or_historical: Literal["live", "historical"] = "historical"
+    last_n_days: int = 60
 
 
 config = Settings()

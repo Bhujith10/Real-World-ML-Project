@@ -1,19 +1,18 @@
 # Runs the trades service as a standalone Pyton app (not Dockerized)
 dev:
-	uv run services/$(service)/src/$(service)/main.py
+	uv run services/${service}/src/${service}/main.py
 
-# Builds a docker image from a given Dockerfile
-build:
-	docker build -t $(service):dev -f docker/$(service).Dockerfile .
+# Builds and pushes the docker image to the given environment
+build-and-push:
+	./scripts/build-and-push-image.sh ${image_name} ${env}
 
-# Push the docker image to the docker registry of our kind cluster
-push:
-	kind load docker-image $(service):dev --name rwml-34fa
-
-# Deploys the docker image to the kind cluster
-deploy: build push
-	kubectl delete -f deployments/dev/$(service).yaml --ignore-not-found=true
-	kubectl apply -f deployments/dev/$(service).yaml
+# Deploys a service to the given environment
+deploy:
+	./scripts/deploy.sh ${service} ${env}
 
 lint:
 	ruff check . --fix
+
+# Without this, we have to rename the consumer_group name everytime we restart the service
+clean-state:
+	rm -rf state/candles_consumer_group*

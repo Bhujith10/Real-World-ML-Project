@@ -1,7 +1,23 @@
-from loguru import logger
 from datetime import timedelta
-from quixstreams import Application
+from typing import Any, List, Optional, Tuple
+
 from candles.config import config
+from loguru import logger
+from quixstreams import Application
+from quixstreams.models import TimestampType
+
+
+def custom_ts_extractor(
+        value: any,
+        headers: Optional[List[Tuple[str, bytes]]],
+        timestamp: float,
+        timestamp_type: TimestampType,
+) -> int:
+    """
+    Specifying a custom timestamp extractor to use the timestamp from the
+    message payload instead of kafka timestamp.
+    """
+    return int(value['timestamp_ms'])
 
 
 def init_candle(trade: dict) -> dict:
@@ -44,12 +60,12 @@ def update_candle(candle: dict, trade: dict) -> dict:
     candle['volume'] += trade['quantity']
 
     return candle
- 
- 
+
+
 def run(
     # kafka parameters
     kafka_broker_address: str,
-    kafka_consumer_group:str,
+    kafka_consumer_group: str,
     kafka_input_topic: str,
     kafka_output_topic: str,
     # candles parameters
@@ -79,7 +95,8 @@ def run(
     )
 
     # input topic
-    trades_topic = app.topic(kafka_input_topic, value_deserializer='json')
+    trades_topic = app.topic(
+        kafka_input_topic, value_deserializer='json', timestamp_extractor=custom_ts_extractor)
     # output topic
     candles_topic = app.topic(kafka_output_topic, value_serializer='json')
 
@@ -94,7 +111,7 @@ def run(
     # Aggregation of trades into candles using tumbling windows
 
     sdf = (
-        # Define a tumbling window of 10 minutes
+        # Define a tumbling window of 1 minute
         sdf.tumbling_window(timedelta(seconds=candle_seconds))
         # Create a "reduce" aggregation with "reducer" and "initializer" functions
         .reduce(reducer=update_candle, initializer=init_candle)

@@ -7,7 +7,8 @@ authors = [
     { name = "Bhujith Madav Velmurugan", email = "bhujith10@gmail.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+]
 
 [build-system]
 requires = ["hatchling"]
