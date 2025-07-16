@@ -22,7 +22,7 @@ spec:
         - name: KAFKA_BROKER_ADDRESS
           value: kafka-e11b-kafka-bootstrap.kafka.svc.cluster.local:9092
         - name: KAFKA_INPUT_TOPIC
-          value: "candles_historical"
+          value: "candles"
         - name: KAFKA_OUTPUT_TOPIC
           value: "technical_indicators"
         - name: KAFKA_CONSUMER_GROUP

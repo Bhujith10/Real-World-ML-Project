@@ -5,7 +5,7 @@
 #
 tracking:
   service:
-    type: LoadBalancer  # Changed from ClusterIP for external access
+    type: NodePort  # Changed from ClusterIP for external access
 
   # temporary user / pass here, should be in the secret
   auth:

@@ -23,8 +23,8 @@ class Settings(BaseSettings):
     # which means they should be present in the env file
     kafka_broker_address: str
     kafka_topic_name: str
-    live_or_historical: Literal["live", "historical"] = "historical"
-    last_n_days: int = 60
+    live_or_historical: Literal["live", "historical"] = "live"
+    last_n_days: int = 90
 
 
 config = Settings()

@@ -23,4 +23,4 @@ spec:
         - name: KAFKA_BROKER_ADDRESS
           value: kafka-e11b-kafka-bootstrap.kafka.svc.cluster.local:9092
         - name: KAFKA_TOPIC_NAME
-          value: "trades_historical"
+          value: "trades"

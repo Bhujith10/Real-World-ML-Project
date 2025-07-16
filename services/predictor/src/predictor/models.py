@@ -1,23 +1,41 @@
-from typing import Optional, Union
+import os
+from typing import Optional
 
+import mlflow
 import numpy as np
 import optuna
 import pandas as pd
+from lazypredict.Supervised import LazyRegressor
 from loguru import logger
 from sklearn.linear_model import HuberRegressor
 from sklearn.metrics import mean_absolute_error
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
+
 class BaselineModel:
     def __init__(self):
+        """
+        Provide initial parameters to initialize the model.
+        """
         pass
 
     def fit(self, X, y):
+        """
+        Fit the model to the data.
+        """
         pass
 
-    def predict(self,X) -> pd.Series:
+    def predict(self, X) -> pd.Series:
+        """
+        Predict the target variable.
+        """
         return X['close']
+
+
+# Define a custom type that can be either a string or a HuberRegressorWithHyperparameterTuning
+# Model = Union[HuberRegressorWithHyperparameterTuning]
+
 
 def get_best_model_candidate(model_candidates_from_best_to_worst: list[str]):
     """
@@ -107,7 +125,8 @@ class HuberRegressorWithHyperparameterTuning:
         """
         if model_hyperparams is None:
             pipeline = Pipeline(
-                steps=[('preprocessor', StandardScaler()), ('model', HuberRegressor())]
+                steps=[('preprocessor', StandardScaler()),
+                       ('model', HuberRegressor())]
             )
         else:
             pipeline = Pipeline(
@@ -207,24 +226,34 @@ class HuberRegressorWithHyperparameterTuning:
         return study.best_trial.params
 
 
-def generate_lazypredict_model_table(
-    X_train: pd.DataFrame, y_train: pd.Series, X_test: pd.DataFrame, y_test: pd.Series
-    ) -> Union[pd.DataFrame, list[str]]:
+def get_model_candidates(
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    X_test: pd.DataFrame,
+    y_test: pd.Series,
+    n_candidates: int,
+) -> list[str]:
     """
     Uses lazypredict to fit N models with default hyperparameters for the given
     (X_train, y_train), and evaluate them with (X_test, y_test)
 
+    It returns a list of model names, from best to worst.
 
+    Args:
+        X_train: pd.DataFrame, the training data
+        y_train: pd.Series, the target variable
+        X_test: pd.DataFrame, the test data
+        y_test: pd.Series, the target variable
+        n_candidates: int, the number of candidates to return
+
+    Returns:
+        list[str], the list of model names from best to worst
     """
     # unset the MLFLOW_TRACKING_URI
-    import os
-
     mlflow_tracking_uri = os.environ['MLFLOW_TRACKING_URI']
     del os.environ['MLFLOW_TRACKING_URI']
 
-    from lazypredict.Supervised import LazyRegressor
-    from sklearn.metrics import mean_absolute_error
-
+    # fit N models with default hyperparameters
     reg = LazyRegressor(
         verbose=0, ignore_warnings=False, custom_metric=mean_absolute_error
     )
@@ -233,7 +262,25 @@ def generate_lazypredict_model_table(
     # reset the index so that the model names are in the first column
     models.reset_index(inplace=True)
 
+    # log table to mlflow experiment
+    mlflow.log_table(
+        models, 'model_candidates_with_default_hyperparameters.json')
+
     # set the MLFLOW_TRACKING_URI back to its original value
     os.environ['MLFLOW_TRACKING_URI'] = mlflow_tracking_uri
 
-    return models, list(models['Model'])
+    # list of top n_candidates model names
+    model_candidates = models['Model'].tolist()[:n_candidates]
+
+    return model_candidates
+
+
+# TODO: create a custom type called Model and use it to annotate things like the output of this function
+def get_model_obj(model_name: str):
+    """
+    Factory function that returns a model object from the given model name.
+    """
+    if model_name == 'HuberRegressor':
+        return HuberRegressorWithHyperparameterTuning()
+    else:
+        raise ValueError(f'Model {model_name} not found')

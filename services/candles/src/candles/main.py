@@ -109,10 +109,12 @@ def run(
     # sdf = sdf.update(lambda message: logger.info(f'Input:  {message}'))
 
     # Aggregation of trades into candles using tumbling windows
-
+    grace_period_days = 365
+    grace_ms = grace_period_days * 24 * 60 * 60 * 1000
     sdf = (
         # Define a tumbling window of 1 minute
-        sdf.tumbling_window(timedelta(seconds=candle_seconds))
+        sdf.tumbling_window(timedelta(seconds=candle_seconds),
+                            grace_ms=grace_ms)
         # Create a "reduce" aggregation with "reducer" and "initializer" functions
         .reduce(reducer=update_candle, initializer=init_candle)
     )
@@ -155,6 +157,9 @@ def run(
 
     # Step 3. Produce the candles to the output kafka topic
     sdf = sdf.to_topic(candles_topic)
+
+    # Clear corrupted state 
+    app.clear_state()
 
     # Starts the streaming app
     app.run()

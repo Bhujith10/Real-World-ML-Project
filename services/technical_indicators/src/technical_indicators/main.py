@@ -1,7 +1,9 @@
 from loguru import logger
 from quixstreams import Application
 from technical_indicators.candle import update_candles_in_state
-from technical_indicators.technical_indicator import compute_technical_indicators
+from technical_indicators.technical_indicator import \
+    compute_technical_indicators
+
 
 def run(
     # kafka parameters
@@ -38,7 +40,8 @@ def run(
     # input topic
     candles_topic = app.topic(kafka_input_topic, value_deserializer='json')
     # output topic
-    technical_indicators_topic = app.topic(kafka_output_topic, value_serializer='json')
+    technical_indicators_topic = app.topic(
+        kafka_output_topic, value_serializer='json')
 
     # Step 1. Ingest candles from the input kafka topic
     # Create a Streaming DataFrame connected to the input Kafka topic
@@ -60,9 +63,12 @@ def run(
     # logging on the console
     sdf = sdf.update(lambda value: logger.debug(f'Final message: {value}'))
 
-    # Step 5. Produce the candles to the output kafka topic
+    # Step 5. Produce the candles to the output kafka tqopic
     sdf = sdf.to_topic(technical_indicators_topic)
-    
+
+    # Clear corrupted state
+    app.clear_state()
+
     # Starts the streaming app
     app.run()
 

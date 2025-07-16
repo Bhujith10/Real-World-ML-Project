@@ -79,7 +79,8 @@ if __name__ == '__main__':
 
     # run(
     #     kafka_broker_address="localhost:9092",
-    #     kafka_topic_name="trades",
+    #     kafka_topic_name="tra
+    # des",
     #     kraken_api=api,
     # )
 
